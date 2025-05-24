@@ -4,7 +4,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# Create table if it doesn't exist
+# Initialize database
 def init_db():
     conn = sqlite3.connect('confessions.db')
     c = conn.cursor()
@@ -14,7 +14,8 @@ def init_db():
             to_name TEXT,
             message TEXT,
             song TEXT,
-            sender TEXT,
+            font TEXT,
+            style TEXT,
             date TEXT
         )
     ''')
@@ -25,27 +26,28 @@ def init_db():
 def index():
     conn = sqlite3.connect('confessions.db')
     c = conn.cursor()
-    c.execute("SELECT to_name, message, song, date FROM confessions ORDER BY id DESC")
+    c.execute('SELECT to_name, message, song, font, style, date FROM confessions ORDER BY id DESC')
     posts = c.fetchall()
     conn.close()
     return render_template('index.html', posts=posts)
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    to_name = request.form['to']
-    message = request.form['message']
-    song = request.form.get('song', '')
-    sender = request.remote_addr
-    date = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    to = request.form.get('to')
+    message = request.form.get('message')
+    song = request.form.get('song')
+    font = request.form.get('font')
+    style = request.form.get('style')
+    date = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     conn = sqlite3.connect('confessions.db')
     c = conn.cursor()
-    c.execute("INSERT INTO confessions (to_name, message, song, sender, date) VALUES (?, ?, ?, ?, ?)",
-              (to_name, message, song, sender, date))
+    c.execute('INSERT INTO confessions (to_name, message, song, font, style, date) VALUES (?, ?, ?, ?, ?, ?)',
+              (to, message, song, font, style, date))
     conn.commit()
     conn.close()
     return redirect('/')
 
 if __name__ == '__main__':
     init_db()
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)(())
