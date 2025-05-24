@@ -1,30 +1,54 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Anonymous Confessions</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confessions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Indie+Flower&family=Permanent+Marker&family=Shadows+Into+Light&family=Architects+Daughter&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Indie+Flower&family=Permanent+Marker&family=Shadows+Into+Light&family=Architects+Daughter&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <h1>Send a Confession</h1>
-        <form method="POST" action="/submit">
-            <input type="text" name="to" placeholder="To..." required><br>
-            <textarea name="message" placeholder="Write your message..." required></textarea><br>
-            <input type="text" name="song" placeholder="Optional Spotify link"><br>
+        <form action="/submit" method="post">
+            <input type="text" name="to" placeholder="To..." required>
+            <textarea name="message" placeholder="Write your message..." id="messageBox" required></textarea>
+            <input type="text" name="song" placeholder="Optional Spotify link">
+            
+            <select name="font" id="fontSelector">
+                <option value="default">Default</option>
+                <option value="indie">Indie Flower</option>
+                <option value="marker">Permanent Marker</option>
+                <option value="shadows">Shadows Into Light</option>
+                <option value="architects">Architects Daughter</option>
+            </select>
+
+            <select name="style" id="styleSelector">
+  <option value="default">Default</option>
+  <option value="bold">Bold</option>
+  <option value="italic">Italic</option>
+  <option value="underline">Underline</option>
+</select>
+
             <button type="submit">Send</button>
         </form>
 
         <h2>Confessions</h2>
-        {% for post in posts %}
-            <div class="confession">
-                <p><strong>To:</strong> {{ post[0] }}</p>
-                <p>{{ post[1] }}</p>
-                {% if post[2] %}
-                    <p><a href="{{ post[2] }}" target="_blank">Spotify Song</a></p>
-                {% endif %}
-                <p><em>{{ post[3] }}</em></p>
-            </div>
-        {% endfor %}
+        <div class="confessions">
+            {% for to_name, message, song, font, style, date in posts %}
+                <div class="confession {{ font }} {{ style }}">
+                    <p><strong>To:</strong> {{ to_name }}</p>
+                    <p>{{ message }}</p>
+                    {% if song %}
+                        <p><a href="{{ song }}" target="_blank">Spotify Link</a></p>
+                    {% endif %}
+                    <p class="date">{{ date }}</p>
+                </div>
+            {% endfor %}
+        </div>
     </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
