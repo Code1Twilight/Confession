@@ -1,51 +1,35 @@
 from flask import Flask, render_template, request, redirect
-import pg8000
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
-# PostgreSQL Database Config (Render details)
-DB_HOST = 'dpg-d0p6k6euk2gs739baj2g-a'
-DB_PORT = 5432
-DB_NAME = 'confessionsdb'
-DB_USER = 'confessionsdb_user'
-DB_PASS = 'AyCjwE3ikc2pR9IkJIRyee3qUjMjlMW0'
+# PostgreSQL connection from Render environment variable
+DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///confessions.db')
 
-# Helper function to connect to PostgreSQL
-def get_db_connection():
-    return pg8000.connect(
-        host=DB_HOST,
-        port=DB_PORT,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS
-    )
+# Fix for SQLAlchemy deprecation warnings (optional but recommended)
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# Initialize database
-def init_db():
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS confessions (
-            id SERIAL PRIMARY KEY,
-            to_name TEXT,
-            message TEXT,
-            song TEXT,
-            font TEXT,
-            style TEXT,
-            date TEXT
-        )
-    ''')
-    conn.commit()
-    conn.close()
+# SQLAlchemy setup
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+# Define the Confession model
+class Confession(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    to_name = db.Column(db.String(100))
+    message = db.Column(db.Text)
+    song = db.Column(db.String(200))
+    font = db.Column(db.String(50))
+    style = db.Column(db.String(50))
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
 @app.route('/')
 def index():
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('SELECT to_name, message, song, font, style, date FROM confessions ORDER BY id DESC')
-    posts = c.fetchall()
-    conn.close()
+    posts = Confession.query.order_by(Confession.id.desc()).all()
     return render_template('index.html', posts=posts)
 
 @app.route('/submit', methods=['POST'])
@@ -55,16 +39,18 @@ def submit():
     song = request.form.get('song')
     font = request.form.get('font')
     style = request.form.get('style')
-    date = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    conn = get_db_connection()
-    c = conn.cursor()
-    c.execute('INSERT INTO confessions (to_name, message, song, font, style, date) VALUES (%s, %s, %s, %s, %s, %s)',
-              (to, message, song, font, style, date))
-    conn.commit()
-    conn.close()
+    new_confession = Confession(
+        to_name=to,
+        message=message,
+        song=song,
+        font=font,
+        style=style
+    )
+    db.session.add(new_confession)
+    db.session.commit()
+
     return redirect('/')
 
 if __name__ == '__main__':
-    db.create_all()
     app.run(debug=True)
