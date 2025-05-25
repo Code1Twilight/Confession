@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 
 # PostgreSQL connection from Render environment variable
-DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///confessions.db')
+DATABASE_URL = postgresql://confessionsdb_user:AyCjwE3ikc2pR9IkJIRyee3qUjMjlMW0@dpg-d0p6k6euk2gs739baj2g-a.oregon-postgres.render.com/confessionsdb
 
 # Fix for SQLAlchemy deprecation warnings (optional but recommended)
 if DATABASE_URL.startswith("postgres://"):
