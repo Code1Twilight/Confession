@@ -5,7 +5,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # PostgreSQL Database Config (Render details)
-DB_HOST = 'dpg-d0p6k6euk2gs739baj2g-a.oregon-postgres.render.com'
+DB_HOST = 'dpg-d0p6k6euk2gs739baj2g-a'
 DB_PORT = 5432
 DB_NAME = 'confessionsdb'
 DB_USER = 'confessionsdb_user'
