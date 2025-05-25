@@ -52,8 +52,11 @@ def submit():
 
     return redirect('/')
 
+# Temporary route to create the tables
+@app.route('/create_tables')
+def create_tables():
+    db.create_all()
+    return "Tables created successfully!"
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        print("Database tables created.")
     app.run(debug=True)
